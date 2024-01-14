@@ -11,12 +11,15 @@ import { UserModule } from '@database/user/user.module';
 import { PlaylistModule } from '@database/playlist/playlist.module';
 import { AlbumModule } from '@database/album/album.module';
 
-const { DATABASE, DB_URL } = process.env;
+const { DATABASE, DB_URL, DB_PASSWORD } = process.env;
 
 @Global()
 @Module({
   imports: [
-    MongooseModule.forRoot(DB_URL + DATABASE),
+    MongooseModule.forRoot(DB_URL, {
+      dbName: DATABASE,
+      auth: { username: DATABASE, password: DB_PASSWORD },
+    }),
     AuthModule,
     SongModule,
     AlbumModule,

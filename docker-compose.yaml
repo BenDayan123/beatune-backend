@@ -1,0 +1,7 @@
+version: '3'
+services:
+  backend:
+    build: ./
+    container_name: beatune-backend
+    environment:
+      - PORT=4000
