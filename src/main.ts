@@ -10,7 +10,7 @@ import { mediaURL } from './config';
 // import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
-  const { PORT } = process.env;
+  const PORT = process.env.PORT ?? 4000;
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
     bodyParser: false,
@@ -27,6 +27,6 @@ async function bootstrap() {
     prefix: '/media/',
   });
   app.use(express.json());
-  await app.listen(PORT);
+  await app.listen(PORT, '0.0.0.0', () => console.log(`Listening on ${PORT}`));
 }
 bootstrap();
