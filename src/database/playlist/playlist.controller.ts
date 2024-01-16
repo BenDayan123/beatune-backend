@@ -23,12 +23,14 @@ import { JwtAuthGuard } from '@auth/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from '../user/user.service';
 import { AddTrackModel, TracksUrlsModel } from './vaildations/add-track.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Controller('/playlist')
 export class PlaylistController {
   constructor(
     @InjectModel(Playlist.name) private PlaylistModel: Model<PlaylistDocument>,
     private userService: UserService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -165,13 +167,14 @@ export class PlaylistController {
   @Post('/')
   @UseInterceptors(FileInterceptor('image'))
   async createPlaylist(
-    @UploadedFile() profile: Express.Multer.File,
+    @UploadedFile() image: Express.Multer.File,
     @Req() req: Request,
   ) {
     const userID = req.user['_id'];
+    const uploadedImage = await this.cloudinaryService.uploadFile(image);
     const playlist = await this.PlaylistModel.create({
       ...req.body,
-      image: profile.filename,
+      image: uploadedImage.url,
       user: userID,
     });
     await this.userService.findOneAndUpdate(

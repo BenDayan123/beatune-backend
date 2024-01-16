@@ -7,20 +7,23 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { ArtistModule } from '@database/artist/artist.module';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 const { JWT_KEY } = process.env;
 
 @Module({
   imports: [
     UserModule,
+    CloudinaryModule,
     // ArtistModule,
     PassportModule,
     JwtModule.register({
       secret: JWT_KEY,
-      signOptions: { expiresIn: '1d' },
+      signOptions: { expiresIn: '2d' },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, CloudinaryService],
   controllers: [AuthController],
   exports: [AuthService],
 })

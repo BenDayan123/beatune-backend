@@ -11,12 +11,17 @@ import { UserService } from '@database/user/user.service';
 import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { IUser } from '@database/user/user.schema';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import * as bcrypt from 'bcryptjs';
+
+const { GEN_SALT } = process.env;
 
 @Controller('/auth')
 export class AuthController {
   constructor(
     private userService: UserService,
     private authService: AuthService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   @Post('/user/signup')
@@ -29,9 +34,11 @@ export class AuthController {
       $or: [{ username: body.username }, { email: body.email }],
     });
     if (!vaildedUser) {
+      const uploadedProfile = await this.cloudinaryService.uploadFile(profile);
       const user = await this.userService.createUser({
         ...body,
-        profile: profile.filename,
+        password: bcrypt.hashSync(body.password, +GEN_SALT),
+        profile: uploadedProfile.url,
       });
       return this.authService.login(user);
     } else throw new UnauthorizedException('The user already exist...');

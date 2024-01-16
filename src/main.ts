@@ -6,8 +6,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import * as express from 'express';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { mediaURL } from './config';
-// import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const PORT = process.env.PORT ?? 4000;
@@ -15,6 +13,7 @@ async function bootstrap() {
     cors: true,
     bodyParser: false,
   });
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -23,10 +22,13 @@ async function bootstrap() {
   );
   app.enableCors();
 
-  app.useStaticAssets(mediaURL, {
-    prefix: '/media/',
-  });
+  // app.useStaticAssets(mediaURL, {
+  //   prefix: '/media/',
+  // });
   app.use(express.json());
-  await app.listen(PORT, '0.0.0.0', () => console.log(`Listening on ${PORT}`));
+  await app.listen(PORT, '0.0.0.0', () =>
+    console.log(`Listening on port ${PORT}`),
+  );
 }
+
 bootstrap();
