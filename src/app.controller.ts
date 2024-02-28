@@ -35,9 +35,10 @@ export class AppController {
     @Query('limit') limit?: number,
   ) {
     const regex = { $regex: `^${query}`, $options: 'i' };
-    const wantedModels = types
-      ? types.split(',')
-      : ['songs', 'artists', 'albums'];
+    const wantedModels =
+      types && types !== 'all'
+        ? types.split(',')
+        : ['songs', 'artists', 'albums'];
     const searches = {
       artists: this.artistService.searchArtists(
         { name: regex },
@@ -80,6 +81,7 @@ export class AppController {
   @Get('/search/options/:query')
   async getQueryOptions(@Param('query') query: string) {
     const regex = new RegExp(`.*${query}.*`, 'gmi');
+    // const regex = { $regex: `^${query}`, $options: 'i' };
     const size = 3;
     const artists = await this.artistService
       .find({ name: regex })

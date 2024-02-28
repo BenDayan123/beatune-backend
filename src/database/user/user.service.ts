@@ -19,8 +19,8 @@ export class UserService {
       .skip(+cursor * limit)
       .limit(limit);
   }
-  async findOne(params: any): Promise<User> {
-    return this.UserModel.findOne(params);
+  async findOne(filter: FilterQuery<UserDocument>) {
+    return this.UserModel.findOne(filter);
   }
   async createUser(user: IUser) {
     return (await this.UserModel.create(user)).save();

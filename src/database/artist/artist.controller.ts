@@ -25,4 +25,33 @@ export class ArtistController {
       '-tracks -artist_id',
     );
   }
+
+  @Get('/genre/top-artist')
+  async topArtistsPerGenre() {
+    const results = await this.ArtistModel.aggregate([
+      {
+        $unwind: '$genres',
+      },
+      {
+        $group: {
+          _id: '$genres',
+          topArtists: {
+            $push: {
+              name: '$name',
+              popularity: '$popularity',
+            },
+          },
+        },
+      },
+      {
+        $sort: {
+          popularity: 1,
+        },
+      },
+      {
+        $limit: 10,
+      },
+    ]);
+    return results;
+  }
 }

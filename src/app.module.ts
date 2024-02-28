@@ -15,6 +15,7 @@ const { DATABASE, DB_URL, DB_PASSWORD } = process.env;
 @Global()
 @Module({
   imports: [
+    // MongooseModule.forRoot('mongodb://localhost:27017/Beatune'),
     MongooseModule.forRoot(DB_URL, {
       dbName: DATABASE,
       auth: { username: DATABASE, password: DB_PASSWORD },

@@ -6,6 +6,7 @@ import {
   Res,
   Delete,
   Param,
+  Post,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './user.schema';
@@ -13,18 +14,24 @@ import { Model, Types } from 'mongoose';
 import { Response, Request } from 'express';
 import { PlaylistService } from '@database/playlist/playlist.service';
 import { JwtAuthGuard } from '@auth/auth.guard';
+import { SongService } from '@database/song/song.service';
 
 @Controller('/user')
 export class UserController {
   constructor(
     @InjectModel(User.name) private UserModel: Model<UserDocument>,
+    private songService: SongService,
     private playlistService: PlaylistService,
   ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()
   async getAuthUser(@Req() req: any) {
-    return await this.UserModel.findById(req.user._id, { password: 0 });
+    return await this.UserModel.findById(req.user._id, {
+      password: 0,
+      playlists: 0,
+      favoriteSongs: 0,
+    });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -41,7 +48,7 @@ export class UserController {
       playlists: { $in: _id },
     });
     if (!user) return res.sendStatus(403);
-    await user.update({ $pull: { playlists: _id } });
+    await user.updateOne({ $pull: { playlists: _id } });
     const data = await this.playlistService.remove(_id);
     return res.json(data);
   }
@@ -60,13 +67,32 @@ export class UserController {
     return res.json(playlists);
   }
 
-  @Get('/change_passwords')
-  remove() {
-    return this.UserModel.find({}).then((users) => {
-      return users.map((user) => {
-        user.password = '123';
-        return user.save();
-      });
+  @UseGuards(JwtAuthGuard)
+  @Get('/favorite-songs')
+  async getFavoriteSong(@Req() req: Request) {
+    const userID = req.user['_id'];
+    const user = await this.UserModel.findById(userID).populate({
+      path: 'favoriteSongs',
+      select: '-lyrics',
+      populate: {
+        path: 'album artist',
+        select: 'image small_image name',
+      },
     });
+    return user.favoriteSongs;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/favorite-songs/:id')
+  async addFavoriteSong(@Req() req: Request, @Param('id') songID: string) {
+    const userID = req.user['_id'];
+    return this.songService.addFavoriteSong(userID, songID);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('/favorite-songs/:id')
+  async removeFavoriteSong(@Req() req: Request, @Param('id') songID: string) {
+    const userID = req.user['_id'];
+    return this.songService.removeFavoriteSong(userID, songID);
   }
 }
